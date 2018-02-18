@@ -1,10 +1,9 @@
 package com.example.nitheeshkpai.docsappchat;
 
-import android.content.Context;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -18,10 +17,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.nitheeshkpai.docsappchat.utils.Constants;
-import com.example.nitheeshkpai.docsappchat.utils.DatabaseHelper;
 import com.example.nitheeshkpai.docsappchat.adapter.MessageAdapter;
 import com.example.nitheeshkpai.docsappchat.model.Message;
+import com.example.nitheeshkpai.docsappchat.utils.Constants;
+import com.example.nitheeshkpai.docsappchat.utils.DatabaseHelper;
+import com.example.nitheeshkpai.docsappchat.utils.NetworkChangeReceiver;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private RequestQueue queue;
 
     private Message receivedMessage;
+
+    NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 updateUI(sendingMessage);
 
                 //Build URL for request
-                String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+ messageToBeSentEditText.getText()+"&chatBotID=63906&externalID=chirag1";
+                String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message=" + messageToBeSentEditText.getText() + "&chatBotID=63906&externalID=chirag1";
 
                 //Re-adjust text in EditText
                 messageToBeSentEditText.setText("");
@@ -78,9 +80,9 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(JSONObject response) {
                                 try {
-                                    if(response.getInt("success") == 1) {
+                                    if (response.getInt("success") == 1) {
                                         gson = new Gson();
-                                        receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
+                                        receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")), Message.class);
                                         updateUI(receivedMessage);
                                         dBHelper.addItem(sendingMessage); //Add sent message to DB if response is successful
                                         dBHelper.addItem(receivedMessage); //Add received message to DB
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 dBHelper.addPending(sendingMessage);
-                                Toast.makeText(getApplicationContext(),"No network Connection",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "No network Connection", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
@@ -111,8 +113,7 @@ public class MainActivity extends AppCompatActivity {
         //Code to scroll up when keyboard appears
         messageRecyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
-            public void onLayoutChange(View v, int left, int top, int right,int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom)
-            {
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 messageRecyclerView.smoothScrollToPosition(messageList.size());
             }
         });
@@ -127,34 +128,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkForPendingMessages();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-    private void checkForPendingMessages() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if(netInfo != null && netInfo.isConnectedOrConnecting()) {
-            ArrayList<Message> pendingMessages = dBHelper.getPendingMessages();
-            for(Message m : pendingMessages) {
-                Toast.makeText(getApplicationContext(),"Sending Pending Messages",Toast.LENGTH_SHORT).show();
-                makeNetworkRequest(m);
-            }
+    public void checkForPendingMessages() {
+        ArrayList<Message> pendingMessages = dBHelper.getPendingMessages();
+        for (Message m : pendingMessages) {
+            Toast.makeText(getApplicationContext(), "Sending Pending Messages", Toast.LENGTH_SHORT).show();
+            makeNetworkRequest(m);
         }
     }
 
     private void makeNetworkRequest(final Message pendingMessage) {
         //Build URL for request
-        String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+ pendingMessage.getMessage()+"&chatBotID=63906&externalID=chirag1";
+        String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message=" + pendingMessage.getMessage() + "&chatBotID=63906&externalID=chirag1";
 
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            if(response.getInt("success") == 1) {
+                            if (response.getInt("success") == 1) {
                                 gson = new Gson();
-                                receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
+                                receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")), Message.class);
                                 updateUI(receivedMessage);
                                 dBHelper.updateItem(pendingMessage); //Add sent message to DB if response is successful
                                 dBHelper.addItem(receivedMessage); //Add received message to DB
@@ -167,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getApplicationContext(),"No network Connection again",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "No network Connection again", Toast.LENGTH_LONG).show();
                     }
                 }
         );
@@ -187,5 +183,11 @@ public class MainActivity extends AppCompatActivity {
                 messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(networkChangeReceiver);
     }
 }
