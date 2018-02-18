@@ -8,16 +8,15 @@
     android:layout_height="match_parent"
     tools:context="com.example.nitheeshkpai.docsappchat.MainActivity">
 
-    <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:id="@+id/reyclerview_message_list"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="0dp"-->
-        <!--app:layout_constraintTop_toTopOf="parent"-->
-        <!--app:layout_constraintLeft_toLeftOf="parent"-->
-        <!--app:layout_constraintRight_toRightOf="parent">-->
-    <!--</android.support.v7.widget.RecyclerView>-->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/reyclerview_message_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+    </android.support.v7.widget.RecyclerView>
 
-    <!-- A horizontal line between the chatbox and RecyclerView -->
     <View
         android:layout_width="0dp"
         android:layout_height="2dp"
@@ -40,7 +39,7 @@
 
         <EditText
             android:id="@+id/edittext_chatbox"
-            android:hint="Enter message"
+            android:hint="Type your message here"
             android:background="@android:color/transparent"
             android:layout_gravity="center"
             android:layout_marginLeft="16dp"
@@ -52,14 +51,13 @@
 
         <Button
             android:id="@+id/button_chatbox_send"
-            android:text="SEND"
-            android:textSize="14dp"
+            android:layout_width="35dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
-            android:layout_width="64dp"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:layout_gravity="bottom" />
+            android:drawableRight="@android:drawable/ic_menu_send"
+            android:gravity="center" />
 
     </LinearLayout>
 
