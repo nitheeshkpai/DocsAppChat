@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,7 +26,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private EditText messageToBeSent;
-    private Button sendButton;
+    private ImageButton sendButton;
 
     private RecyclerView messageRecyclerView;
     private MessageListAdapter messageAdapter;
@@ -54,9 +55,9 @@ public class MainActivity extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 messageList.add(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
                 messageAdapter.notifyDataSetChanged();
+                adjustScroll();
                 String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+messageToBeSent.getText()+"&chatBotID=63906&externalID=chirag1";
                 messageToBeSent.setText("");
                 messageToBeSent.setHint("Type your message here");
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                         receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
                                         messageList.add(receivedMessage);
                                         messageAdapter.notifyDataSetChanged();
+                                        adjustScroll();
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -88,5 +90,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void adjustScroll() {
+        messageRecyclerView.post(new Runnable() {
+            public void run() {
+                messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
+            }
+        });
     }
 }
