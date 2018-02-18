@@ -14,6 +14,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText messageToBeSent;
     private Button sendButton;
+
+    private Gson gson;
+
+    private ReceivedMessage receivedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +47,14 @@ public class MainActivity extends AppCompatActivity {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-
+                                try {
+                                    if(response.getInt("success") == 1) {
+                                        gson = new Gson();
+                                        receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),ReceivedMessage.class);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         },
                         new Response.ErrorListener() {
