@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                updateUI(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
+                updateUIandDB(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
 
                 //Build URL for request
                 String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+messageToBeSent.getText()+"&chatBotID=63906&externalID=chirag1";
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                                     if(response.getInt("success") == 1) {
                                         gson = new Gson();
                                         receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
-                                        updateUI(receivedMessage);
+                                        updateUIandDB(receivedMessage);
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private void updateUI(Message message) { //Method to add messages to view, update scroll
+    private void updateUIandDB(Message message) { //Method to add messages to view, update scroll
         messageList.add(message);
         messageAdapter.notifyDataSetChanged();
         messageRecyclerView.post(new Runnable() {
