@@ -40,11 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        //Set up Edittext, Recycler View and Adapter
-        messageRecyclerView = findViewById(R.id.recycler_view_message_list);
-        messageAdapter = new MessageListAdapter(messageList);
-        messageRecyclerView.setAdapter(messageAdapter);
-        messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        initRecyclerView();
 
         messageToBeSent = findViewById(R.id.edit_text_chat_box);
         ImageButton sendButton = findViewById(R.id.button_chat_box_send);
@@ -90,6 +86,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void initRecyclerView() {
+        //Set up Recycler View and Adapter
+        messageRecyclerView = findViewById(R.id.recycler_view_message_list);
+
+        //Code to scroll up when keyboard appears
+        messageRecyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right,int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom)
+            {
+                messageRecyclerView.smoothScrollToPosition(messageList.size());
+            }
+        });
+
+        messageAdapter = new MessageListAdapter(messageList);
+        messageRecyclerView.setAdapter(messageAdapter);
+        messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     private void updateUI(Message message) { //Method to add messages to view, update scroll
