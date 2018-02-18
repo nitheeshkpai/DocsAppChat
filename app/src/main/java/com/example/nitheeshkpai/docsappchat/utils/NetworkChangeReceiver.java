@@ -1,9 +1,5 @@
 package com.example.nitheeshkpai.docsappchat.utils;
 
-/**
- * Created by nitheeshkpai on 2/18/18.
- */
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +18,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
 
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         if(netInfo != null && netInfo.isConnectedOrConnecting()) {
-            ((MainActivity) context).checkForPendingMessages();
+            ((MainActivity) context).checkForPendingMessages(); //Send pending messages when connectivity is restored
         }
     }
 }

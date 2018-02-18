@@ -31,20 +31,19 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
+
     private DatabaseHelper dBHelper;
+    private Message receivedMessage;
 
     private EditText messageToBeSentEditText;
     private RecyclerView messageRecyclerView;
     private MessageAdapter messageAdapter;
 
-    private final ArrayList<Message> messageList = new ArrayList<>();
-
     private Gson gson;
     private RequestQueue queue;
 
-    private Message receivedMessage;
-
-    NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
+    private final ArrayList<Message> messageList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 updateUI(sendingMessage);
 
                 //Build URL for request
-                String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message=" + messageToBeSentEditText.getText() + "&chatBotID=63906&externalID=chirag1";
+                String url = Constants.urlPrefix + messageToBeSentEditText.getText() + Constants.urlSuffix;
 
                 //Re-adjust text in EditText
                 messageToBeSentEditText.setText("");
@@ -84,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
                                         gson = new Gson();
                                         receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")), Message.class);
                                         updateUI(receivedMessage);
-                                        dBHelper.addItem(sendingMessage); //Add sent message to DB if response is successful
-                                        dBHelper.addItem(receivedMessage); //Add received message to DB
+                                        dBHelper.saveMessage(sendingMessage); //Add sent message to DB if response is successful
+                                        dBHelper.saveMessage(receivedMessage); //Add received message to DB
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                dBHelper.addPending(sendingMessage);
+                                dBHelper.addPending(sendingMessage); //Add unsent message to pending list
                                 Toast.makeText(getApplicationContext(), "No network Connection", Toast.LENGTH_LONG).show();
                             }
                         }
@@ -103,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 queue.add(getRequest);
             }
         });
-
     }
 
     private void initRecyclerView() {
@@ -125,23 +123,27 @@ public class MainActivity extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    private void updateUI(Message message) { //Method to add messages to view, update scroll
+        messageList.add(message);
+        messageAdapter.notifyDataSetChanged();
+        messageRecyclerView.post(new Runnable() {
+            public void run() {
+                messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
+            }
+        });
     }
 
     public void checkForPendingMessages() {
         ArrayList<Message> pendingMessages = dBHelper.getPendingMessages();
         for (Message m : pendingMessages) {
             Toast.makeText(getApplicationContext(), "Sending Pending Messages", Toast.LENGTH_SHORT).show();
-            makeNetworkRequest(m);
+            makeNetworkRequestForPendingMessages(m);
         }
     }
 
-    private void makeNetworkRequest(final Message pendingMessage) {
-        //Build URL for request
-        String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message=" + pendingMessage.getMessage() + "&chatBotID=63906&externalID=chirag1";
+    private void makeNetworkRequestForPendingMessages(final Message pendingMessage) {
+        //Build URL for request to send unsent messages
+        String url = Constants.urlPrefix + pendingMessage.getMessage() + Constants.urlSuffix;
 
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -152,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
                                 gson = new Gson();
                                 receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")), Message.class);
                                 updateUI(receivedMessage);
-                                dBHelper.updateItem(pendingMessage); //Add sent message to DB if response is successful
-                                dBHelper.addItem(receivedMessage); //Add received message to DB
+                                dBHelper.removePendingMessage(pendingMessage); //Update dirty bit of previously unsent message
+                                dBHelper.saveMessage(receivedMessage); //Add received message to DB
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -171,18 +173,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-    private void updateUI(Message message) { //Method to add messages to view, update scroll
-        messageList.add(message);
-        messageAdapter.notifyDataSetChanged();
-        messageRecyclerView.post(new Runnable() {
-            public void run() {
-                messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
-            }
-        });
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override

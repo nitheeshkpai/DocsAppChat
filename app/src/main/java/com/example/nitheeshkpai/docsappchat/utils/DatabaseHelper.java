@@ -49,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addItem(Message messageItem) {
+    public void saveMessage(Message messageItem) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -110,7 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return itemList;
     }
 
-    public void updateItem(Message pendingMessage) {
+    public void removePendingMessage(Message pendingMessage) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
