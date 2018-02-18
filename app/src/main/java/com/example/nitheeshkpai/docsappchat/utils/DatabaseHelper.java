@@ -1,10 +1,12 @@
-package com.example.nitheeshkpai.docsappchat;
+package com.example.nitheeshkpai.docsappchat.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.example.nitheeshkpai.docsappchat.model.Message;
 
 import java.util.ArrayList;
 
@@ -22,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Chats table name
     private static final String TABLE_ITEMS = "chats";
 
-    // News articles Table Columns names
+    // Chats Table Columns names
     private static final String KEY_ID = "id";
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_SENDER_NAME = "username";

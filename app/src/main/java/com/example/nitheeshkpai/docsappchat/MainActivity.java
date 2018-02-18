@@ -15,6 +15,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.nitheeshkpai.docsappchat.utils.Constants;
+import com.example.nitheeshkpai.docsappchat.utils.DatabaseHelper;
+import com.example.nitheeshkpai.docsappchat.adapter.MessageAdapter;
+import com.example.nitheeshkpai.docsappchat.model.Message;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -28,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText messageToBeSent;
     private RecyclerView messageRecyclerView;
-    private MessageListAdapter messageAdapter;
+    private MessageAdapter messageAdapter;
 
     private final ArrayList<Message> messageList = new ArrayList<>();
 
@@ -82,8 +86,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(getApplicationContext(),"No network Connection",Toast.LENGTH_LONG);
-
+                                Toast.makeText(getApplicationContext(),"No network Connection",Toast.LENGTH_LONG).show();
                             }
                         }
                 );
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         messageList.addAll(dBHelper.getAllItems());
 
-        messageAdapter = new MessageListAdapter(messageList);
+        messageAdapter = new MessageAdapter(messageList);
         messageRecyclerView.setAdapter(messageAdapter);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }

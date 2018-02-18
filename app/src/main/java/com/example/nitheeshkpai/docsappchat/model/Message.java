@@ -1,4 +1,4 @@
-package com.example.nitheeshkpai.docsappchat;
+package com.example.nitheeshkpai.docsappchat.model;
 
 import android.text.Editable;
 
@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by nitheeshkpai on 2/18/18.
  */
 
-class Message {
+public class Message {
 
     @SerializedName("chatBotName")
     private String name;
