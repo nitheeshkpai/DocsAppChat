@@ -1,5 +1,8 @@
 package com.example.nitheeshkpai.docsappchat;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,13 +33,14 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseHelper dBHelper;
 
-    private EditText messageToBeSent;
+    private EditText messageToBeSentEditText;
     private RecyclerView messageRecyclerView;
     private MessageAdapter messageAdapter;
 
     private final ArrayList<Message> messageList = new ArrayList<>();
 
     private Gson gson;
+    private RequestQueue queue;
 
     private Message receivedMessage;
 
@@ -50,23 +54,24 @@ public class MainActivity extends AppCompatActivity {
 
         initRecyclerView();
 
-        messageToBeSent = findViewById(R.id.edit_text_chat_box);
+        messageToBeSentEditText = findViewById(R.id.edit_text_chat_box);
         ImageButton sendButton = findViewById(R.id.button_chat_box_send);
 
         //Set up Volley to send API request on clicking send
-        final RequestQueue queue = Volley.newRequestQueue(this);
+        queue = Volley.newRequestQueue(this);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                updateUIandDB(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
+                final Message sendingMessage = new Message(Constants.currentUserID, Constants.currentUserName, messageToBeSentEditText.getText());
+                updateUI(sendingMessage);
 
                 //Build URL for request
-                String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+messageToBeSent.getText()+"&chatBotID=63906&externalID=chirag1";
+                String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+ messageToBeSentEditText.getText()+"&chatBotID=63906&externalID=chirag1";
 
                 //Re-adjust text in EditText
-                messageToBeSent.setText("");
-                messageToBeSent.setHint("Type your message here");
+                messageToBeSentEditText.setText("");
+                messageToBeSentEditText.setHint("Type your message here");
 
                 JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                         new Response.Listener<JSONObject>() {
@@ -76,7 +81,9 @@ public class MainActivity extends AppCompatActivity {
                                     if(response.getInt("success") == 1) {
                                         gson = new Gson();
                                         receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
-                                        updateUIandDB(receivedMessage);
+                                        updateUI(receivedMessage);
+                                        dBHelper.addItem(sendingMessage); //Add sent message to DB if response is successful
+                                        dBHelper.addItem(receivedMessage); //Add received message to DB
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -86,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
+                                dBHelper.addPending(sendingMessage);
                                 Toast.makeText(getApplicationContext(),"No network Connection",Toast.LENGTH_LONG).show();
                             }
                         }
@@ -119,6 +127,51 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkForPendingMessages();
+    }
+
+    private void checkForPendingMessages() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if(netInfo != null && netInfo.isConnectedOrConnecting()) {
+            ArrayList<Message> pendingMessages = dBHelper.getPendingMessages();
+            for(Message m : pendingMessages) {
+                Toast.makeText(getApplicationContext(),"Sending Pending Messages",Toast.LENGTH_SHORT).show();
+                makeNetworkRequest(m);
+            }
+        }
+    }
+
+    private void makeNetworkRequest(final Message pendingMessage) {
+        //Build URL for request
+        String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+ pendingMessage.getMessage()+"&chatBotID=63906&externalID=chirag1";
+
+        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if(response.getInt("success") == 1) {
+                                gson = new Gson();
+                                receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
+                                updateUI(receivedMessage);
+                                dBHelper.updateItem(pendingMessage); //Add sent message to DB if response is successful
+                                dBHelper.addItem(receivedMessage); //Add received message to DB
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(),"No network Connection again",Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+        queue.add(getRequest);
     }
 
     @Override
@@ -126,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private void updateUIandDB(Message message) { //Method to add messages to view, update scroll
+    private void updateUI(Message message) { //Method to add messages to view, update scroll
         messageList.add(message);
         messageAdapter.notifyDataSetChanged();
         messageRecyclerView.post(new Runnable() {
@@ -134,6 +187,5 @@ public class MainActivity extends AppCompatActivity {
                 messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
             }
         });
-        dBHelper.addItem(message);
     }
 }

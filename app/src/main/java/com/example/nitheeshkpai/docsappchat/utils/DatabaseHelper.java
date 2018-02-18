@@ -28,6 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_ID = "id";
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_SENDER_NAME = "username";
+    private static final String KEY_PENDING = "isPending";
 
 
     public DatabaseHelper(Context context) {
@@ -38,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_CHAT_ITEMS_TABLE = "CREATE TABLE " + TABLE_ITEMS + "("
                 + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_MESSAGE + " TEXT,"
-                + KEY_SENDER_NAME + " TEXT"+")";
+                + KEY_SENDER_NAME + " TEXT," + KEY_PENDING + " INTEGER DEFAULT 0" + ")";
         db.execSQL(CREATE_CHAT_ITEMS_TABLE);
     }
 
@@ -78,4 +79,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return itemList;
     }
 
+    public void addPending(Message message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_MESSAGE, message.getMessage());
+        values.put(KEY_SENDER_NAME, message.getName());
+        values.put(KEY_PENDING, 1);
+
+        db.insert(TABLE_ITEMS, null, values);
+        db.close();
+    }
+
+    public ArrayList<Message> getPendingMessages() {
+        ArrayList<Message> itemList = new ArrayList<>();
+        String selectQuery = "SELECT  * FROM " + TABLE_ITEMS + " WHERE isPending = 1";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Message item = new Message();
+                item.setMessage(cursor.getString(1));
+                item.setName(cursor.getString(2));
+                itemList.add(item);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return itemList;
+    }
+
+    public void updateItem(Message pendingMessage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PENDING, 0);
+
+        db.update(TABLE_ITEMS, values, "username=? AND message=?", new String[]{pendingMessage.getName(), pendingMessage.getMessage()});
+        db.close();
+    }
 }

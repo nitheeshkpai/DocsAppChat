@@ -50,4 +50,5 @@ public class Message {
     public Integer getUserId() {
         return userId;
     }
+
 }
