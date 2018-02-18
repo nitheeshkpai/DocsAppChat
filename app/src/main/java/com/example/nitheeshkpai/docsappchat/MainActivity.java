@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -21,17 +20,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText messageToBeSent;
-    private ImageButton sendButton;
 
     private RecyclerView messageRecyclerView;
     private MessageListAdapter messageAdapter;
 
-    private ArrayList<Message> messageList = new ArrayList<>();
+    private final ArrayList<Message> messageList = new ArrayList<>();
 
     private Gson gson;
 
@@ -40,25 +37,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        messageRecyclerView = findViewById(R.id.reyclerview_message_list);
-        messageAdapter = new MessageListAdapter(this, messageList);
+        //Set up Edittext, Recycler View and Adapter
+        messageRecyclerView = findViewById(R.id.recycler_view_message_list);
+        messageAdapter = new MessageListAdapter(messageList);
         messageRecyclerView.setAdapter(messageAdapter);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        messageToBeSent = findViewById(R.id.edit_text_chat_box);
+        ImageButton sendButton = findViewById(R.id.button_chat_box_send);
+
+        //Set up Volley to send API request on clicking send
         final RequestQueue queue = Volley.newRequestQueue(this);
-
-        messageToBeSent = findViewById(R.id.edittext_chatbox);
-
-        sendButton = findViewById(R.id.button_chatbox_send);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                messageList.add(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
-                messageAdapter.notifyDataSetChanged();
-                adjustScroll();
+
+                updateUI(new Message(Constants.currentUserID, Constants.currentUserName,messageToBeSent.getText()));
+
+                //Build URL for request
                 String url = "https://www.personalityforge.com/api/chat/?apiKey=6nt5d1nJHkqbkphe&message="+messageToBeSent.getText()+"&chatBotID=63906&externalID=chirag1";
+
+                //Re-adjust text in EditText
                 messageToBeSent.setText("");
                 messageToBeSent.setHint("Type your message here");
 
@@ -70,9 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                     if(response.getInt("success") == 1) {
                                         gson = new Gson();
                                         receivedMessage = gson.fromJson(String.valueOf(response.getJSONObject("message")),Message.class);
-                                        messageList.add(receivedMessage);
-                                        messageAdapter.notifyDataSetChanged();
-                                        adjustScroll();
+                                        updateUI(receivedMessage);
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -92,7 +92,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void adjustScroll() {
+    private void updateUI(Message message) { //Method to add messages to view, update scroll
+        messageList.add(message);
+        messageAdapter.notifyDataSetChanged();
         messageRecyclerView.post(new Runnable() {
             public void run() {
                 messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());

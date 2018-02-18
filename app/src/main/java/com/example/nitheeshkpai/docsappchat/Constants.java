@@ -6,6 +6,6 @@ package com.example.nitheeshkpai.docsappchat;
 
 class Constants {
 
-    public static int currentUserID = 63906;
-    public static String currentUserName = "chirag1";
+    public static final int currentUserID = 63906;
+    public static final String currentUserName = "chirag1";
 }

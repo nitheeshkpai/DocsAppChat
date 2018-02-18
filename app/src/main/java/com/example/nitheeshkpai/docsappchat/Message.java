@@ -2,43 +2,48 @@ package com.example.nitheeshkpai.docsappchat;
 
 import android.text.Editable;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by nitheeshkpai on 2/18/18.
  */
 
-public class Message {
+class Message {
 
-    private String chatBotName;
-    private Integer chatBotID;
+    @SerializedName("chatBotName")
+    private String name;
+
+    @SerializedName("chatBotID")
+    private Integer userId;
     private String message;
 
     public Message(int currentUserID, String currentUserName, Editable text) {
-        chatBotID = currentUserID;
-        chatBotName = currentUserName;
+        userId = currentUserID;
+        name = currentUserName;
         message = text.toString();
     }
 
-    public void setChatBotName(String name) {
-        chatBotName = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setChatBotID(int id) {
-        chatBotID = id;
+    public void setUserId(int id) {
+        userId = id;
     }
 
     public void setMessage(String msg) {
         message = msg;
     }
 
-    public String getChatBotName() {
-        return chatBotName;
+    public String getName() {
+        return name;
     }
 
     public String getMessage() {
         return message;
     }
 
-    public Integer getChatBotID() {
-        return chatBotID;
+    public Integer getUserId() {
+        return userId;
     }
 }

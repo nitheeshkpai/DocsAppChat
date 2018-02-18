@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,24 +7,24 @@
     tools:context="com.example.nitheeshkpai.docsappchat.MainActivity">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/reyclerview_message_list"
+        android:id="@+id/recycler_view_message_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@id/layout_chatbox"
-        android:layout_marginBottom="52dp"></android.support.v7.widget.RecyclerView>
+        app:layout_constraintBottom_toTopOf="@id/layout_chat_box"
+        android:layout_marginBottom="52dp"/>
 
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:background="#dfdfdf"
-        app:layout_constraintBottom_toTopOf="@+id/layout_chatbox"
+        app:layout_constraintBottom_toTopOf="@+id/layout_chat_box"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
     <LinearLayout
-        android:id="@+id/layout_chatbox"
+        android:id="@+id/layout_chat_box"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -37,8 +35,8 @@
         app:layout_constraintLeft_toLeftOf="parent">
 
         <EditText
-            android:id="@+id/edittext_chatbox"
-            android:hint="Type your message here"
+            android:id="@+id/edit_text_chat_box"
+            android:hint="@string/type_text"
             android:background="@android:color/transparent"
             android:layout_gravity="center"
             android:layout_marginLeft="16dp"
@@ -49,12 +47,14 @@
             android:maxLines="6"/>
 
         <ImageButton
-            android:id="@+id/button_chatbox_send"
+            android:id="@+id/button_chat_box_send"
+            android:contentDescription="@string/send"
             android:layout_width="35dp"
             android:layout_height="48dp"
             android:layout_gravity="bottom"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
+            android:focusable="true"
             android:src="@drawable/ic_send"
             android:gravity="center" />
 

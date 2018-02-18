@@ -3,7 +3,6 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="8dp">
@@ -13,6 +12,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="@drawable/ic_person"
+        android:contentDescription="@string/profile_image"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent" />
@@ -22,15 +22,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="12dp"
-        android:text="John Doe"
         android:textSize="12sp"
         app:layout_constraintLeft_toRightOf="@+id/image_message_profile"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/text_message_body"
-        android:text="hi man, how are you?"
-        android:background="@drawable/rounded_rectangle_recieved"
+        android:background="@drawable/rounded_rectangle_received"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxWidth="240dp"
