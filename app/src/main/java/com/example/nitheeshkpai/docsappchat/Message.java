@@ -23,6 +23,10 @@ class Message {
         message = text.toString();
     }
 
+    public Message() {
+
+    }
+
     public void setName(String name) {
         this.name = name;
     }

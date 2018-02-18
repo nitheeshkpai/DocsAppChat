@@ -23,8 +23,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText messageToBeSent;
+    private DatabaseHelper dBHelper;
 
+    private EditText messageToBeSent;
     private RecyclerView messageRecyclerView;
     private MessageListAdapter messageAdapter;
 
@@ -37,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        dBHelper = new DatabaseHelper(getApplicationContext());
 
         setContentView(R.layout.activity_main);
 
@@ -101,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        messageList.addAll(dBHelper.getAllItems());
+
         messageAdapter = new MessageListAdapter(messageList);
         messageRecyclerView.setAdapter(messageAdapter);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -124,5 +129,6 @@ public class MainActivity extends AppCompatActivity {
                 messageRecyclerView.smoothScrollToPosition(messageRecyclerView.getBottom());
             }
         });
+        dBHelper.addItem(message);
     }
 }
